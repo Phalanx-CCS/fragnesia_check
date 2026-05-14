@@ -310,13 +310,30 @@ check_su_integrity() {
         warn "${su_path} does NOT have setuid bit — unusual"
     fi
 }
-
 # =============================================================================
 # FINAL VERDICT
 # =============================================================================
 print_verdict() {
     local vuln_count=${#VULN_FLAGS[@]}
     local mitig_count=${#MITIG_FLAGS[@]}
+
+    # Initialize critical hit flag
+    local crit_hit=0
+    local critical_vulns=(
+        "kernel_build_date_before_patch"
+        "module_loaded_esp4"
+        "module_loaded_esp6"
+        "espintcp_ulp_available"
+    )
+
+    for cv in "${critical_vulns[@]}"; do
+        for vf in "${VULN_FLAGS[@]}"; do
+            if [[ "$vf" == "$cv" ]]; then
+                crit_hit=1
+                break 2
+            fi
+        done
+    done
 
     echo -e "\n${BLD}${CYN}══════════════════════════════════════════════════════════════${RST}"
     echo -e "${BLD}${CYN}  FRAGNESIA ASSESSMENT VERDICT${RST}"
@@ -341,20 +358,6 @@ print_verdict() {
         echo
     fi
 
-    # Determine overall verdict
-    local critical_vulns=(
-        "module_loaded_esp4"
-        "module_loaded_esp6"
-        "kernel_build_date_before_patch"
-        "espintcp_ulp_available"
-    )
-    local crit_hit=0
-    for cv in "${critical_vulns[@]}"; do
-        for vf in "${VULN_FLAGS[@]}"; do
-            [[ "$vf" == "$cv" ]] && crit_hit=1 && break 2
-        done
-    done
-
     echo -e "${BLD}${CYN}──────────────────────────────────────────────────────────────${RST}"
 
     if [[ $vuln_count -eq 0 ]]; then
@@ -364,15 +367,20 @@ print_verdict() {
         echo -e "\n  ${RED}${BLD}  ✘  VERDICT: LIKELY VULNERABLE (CRITICAL CONDITIONS MET)${RST}"
         echo -e "  ${DIM}One or more critical conditions confirm active attack surface.${RST}"
         echo -e "\n  ${YLW}${BLD}Recommended immediate actions:${RST}"
-        echo -e "  ${YLW}1. Apply kernel patch (rebuild/upgrade to kernel built after 2026-05-13)${RST}"
-        echo -e "  ${YLW}2. Blacklist modules: rmmod esp4 esp6 rxrpc${RST}"
-        echo -e "     ${DIM}printf 'install esp4 /bin/false\\ninstall esp6 /bin/false\\ninstall rxrpc /bin/false\\n' \\${RST}"
-        echo -e "     ${DIM}  > /etc/modprobe.d/dirtyfrag.conf${RST}"
-        echo -e "  ${YLW}3. Drop page cache if su execution is suspected: echo 1 | tee /proc/sys/vm/drop_caches${RST}"
+        echo -e "  ${YLW}1. Upgrade kernel to one built after 2026-05-13${RST}"
+        echo -e "  ${YLW}2. Blacklist vulnerable modules:${RST}"
+        echo -e "     ${DIM}sudo bash -c 'cat > /etc/modprobe.d/dirtyfrag.conf << EOF"
+        echo -e "install esp4 /bin/false"
+        echo -e "install esp6 /bin/false"
+        echo -e "install rxrpc /bin/false"
+        echo -e "EOF'${RST}"
+        echo -e "  ${YLW}3. Unload modules immediately:${RST}"
+        echo -e "     ${DIM}sudo rmmod esp4 esp6 rxrpc 2>/dev/null || true${RST}"
+        echo -e "  ${YLW}4. Drop page cache (if you suspect compromise):${RST}"
+        echo -e "     ${DIM}sudo bash -c 'echo 1 > /proc/sys/vm/drop_caches'${RST}"
     else
         echo -e "\n  ${YLW}${BLD}  !  VERDICT: PARTIAL RISK — REVIEW FLAGGED ITEMS${RST}"
-        echo -e "  ${DIM}Some vulnerability indicators present but critical conditions not confirmed.${RST}"
-        echo -e "  ${DIM}Address all flagged items before marking this host clean.${RST}"
+        echo -e "  ${DIM}Some vulnerability indicators present but no critical conditions.${RST}"
     fi
 
     echo -e "\n${BLD}${CYN}══════════════════════════════════════════════════════════════${RST}"
@@ -380,7 +388,6 @@ print_verdict() {
     echo -e "  ${DIM}Patch ref: https://lists.openwall.net/netdev/2026/05/13/79${RST}"
     echo -e "${BLD}${CYN}══════════════════════════════════════════════════════════════${RST}\n"
 }
-
 # =============================================================================
 # MAIN
 # =============================================================================
