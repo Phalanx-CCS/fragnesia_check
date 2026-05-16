@@ -17,14 +17,14 @@ Patch merged on **2026-05-13** — [netdev mailing list](https://lists.openwall.
 
 ## ✨ Features
 
-- **Kernel Build Date Analysis** — Detects if the running kernel was compiled before or after the patch
-- **Module State Checks** — Verifies if `esp4`, `esp6`, or `rxrpc` are loaded
-- **Module Blacklist Verification** — Checks `/etc/modprobe.d/` for hardening
-- **User Namespace Controls** — Evaluates `unprivileged_userns_clone` and `max_user_namespaces`
-- **AppArmor Integration** — Checks Ubuntu-specific unprivileged userns restrictions
-- **Kernel Config Inspection** — Reviews relevant XFRM/ESP compile-time options
-- **Patch Indicator Detection** — Looks for runtime indicators of the fix
-- **Post-Exploitation Indicators** — Checks for signs of prior compromise (e.g., `/usr/bin/su` anomalies)
+- **Kernel Build Date Analysis** —> Detects if the running kernel was compiled before or after the patch
+- **Module State Checks** —> Verifies if `esp4`, `esp6`, or `rxrpc` are loaded
+- **Module Blacklist Verification** —> Checks `/etc/modprobe.d/` for hardening
+- **User Namespace Controls** —> Evaluates `unprivileged_userns_clone` and `max_user_namespaces`
+- **AppArmor Integration** —> Checks Ubuntu-specific unprivileged userns restrictions
+- **Kernel Config Inspection** —> Reviews relevant XFRM/ESP compile-time options
+- **Patch Indicator Detection** —> Looks for runtime indicators of the fix
+- **Post-Exploitation Indicators** —> Checks for signs of prior compromise (e.g., `/usr/bin/su` anomalies)
 - **Clear color-coded output** with verdict summary
 
 ---
@@ -95,6 +95,6 @@ Phalanx CCS and the author are not responsible for any misuse or damage resultin
 
 📄 License
 
-This project is licensed under the MIT License — see the LICENSE file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 Made with ❤️ for the Linux security community
